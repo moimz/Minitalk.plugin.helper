@@ -1,0 +1,17 @@
+{
+	"id":"com.moimz.minitalk.plugin.helper",
+	"icon":"xi xi-comments",
+	"title":{
+		"ko":"채팅도우미 플러그인"
+	},
+	"version":"1.0.0",
+	"description":{
+		"ko":"채팅메시지를 쉽게 입력할 수 있도록 도움을 제공합니다."
+	},
+	"author":{
+		"name":"Arzz",
+		"email":"arzz@arzz.com"
+	},
+	"homepage":"https://www.minitalk.io",
+	"language":"ko"
+}

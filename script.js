@@ -7,8 +7,10 @@
  * @author Arzz (arzz@arzz.com)
  * @license MIT License
  * @version 1.0.0
- * @modified 2020. 12. 24.
+ * @modified 2021. 1. 24.
  */
+if (Minitalk === undefined) return;
+
 me.messageIdx = -1;
 me.whisperIdx = -1;
 
@@ -41,11 +43,12 @@ Minitalk.on("sendWhisper",function(minitalk,to,message) {
 		whispers = [];
 	}
 	
-	if (whispers.indexOf("[" + to + "]") >= 0) {
-		whispers.splice(whispers.indexOf("[" + to + "]"),1);
+	var index = $.inArray(to,whispers);
+	if (index > -1) {
+		whispers.splice(index,1);
 	}
 	
-	whispers.push("[" + to + "]");
+	whispers.push(to);
 	minitalk.storage("helperWhispers",whispers);
 	
 	var messages = minitalk.storage("helperMessages");
@@ -64,27 +67,26 @@ Minitalk.on("sendWhisper",function(minitalk,to,message) {
 });
 
 // 귓속말을 받았을 때 대상을 저장한다.
-Minitalk.on("whisper",function(minitalk,from,message) {
-	var whispers = minitalk.storage("helperWhispers");
-	if (whispers == null) {
-		whispers = [];
+Minitalk.on("message",function(minitalk,message) {
+	if (message.to !== null) {
+		var whispers = minitalk.storage("helperWhispers");
+		if (whispers == null) {
+			whispers = [];
+		}
+		
+		var index = $.inArray(message.user.nickname,whispers);
+		if (index > -1) {
+			whispers.splice(index,1);
+		}
+		
+		whispers.push(message.user.nickname);
+		minitalk.storage("helperWhispers",whispers);
 	}
-	
-	if (whispers.indexOf("[" + from.nickname + "]") >= 0) {
-		whispers.splice(whispers.indexOf("[" + from.nickname + "]"),1);
-	}
-	
-	whispers.push("[" + from.nickname + "]");
-	minitalk.storage("helperWhispers",whispers);
 });
 
 // 미니톡 UI 가 정의되면 입력폼에 이벤트를 등록한다.
 Minitalk.on("init",function(minitalk) {
-	if (Minitalk.version < 70000) {
-		var $input = $("div[data-role=input] > input");
-	} else {
-		var $input = $("div[data-role=input] > textarea");
-	}
+	var $input = $("div[data-role=input] > textarea");
 	
 	$input.on("keydown",function(e) {
 		// 방향키 위/아래 입력시 순서에 따라 이전 대화기록을 불러온다.
@@ -109,7 +111,7 @@ Minitalk.on("init",function(minitalk) {
 				$input.get(0).select();
 			} else {
 				if (me.messageIdx >= messages.length - 1) {
-					Minitalk.ui.printMessage("error","채팅기록 제일 마지막입니다. 방향키 위버튼을 눌러 이전 채팅기록을 불러올 수 있습니다.");
+					Minitalk.ui.printSystemMessage("error","채팅기록 제일 마지막입니다. 방향키 위버튼을 눌러 이전 채팅기록을 불러올 수 있습니다.");
 					e.preventDefault();
 					return;
 				}
@@ -138,7 +140,7 @@ Minitalk.on("init",function(minitalk) {
 				me.whisperIdx = whispers.length;
 			}
 			
-			$input.val("/w " + whispers[--me.whisperIdx].replace(/^\[/,"").replace(/\]$/,"") + " ");
+			$input.val("/w " + whispers[--me.whisperIdx] + " ");
 			e.preventDefault();
 		}
 	});
